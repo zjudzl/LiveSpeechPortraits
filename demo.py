@@ -59,7 +59,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     device = torch.device(opt.device)
     with open(join('./config/', opt.id + '.yaml')) as f:
-        config = yaml.load(f)
+        config = yaml.safe_load(f)
     data_root = join('./data/', opt.id)
     # create the results folder
     audio_name = os.path.split(opt.driving_audio)[1][:-4]
@@ -146,10 +146,13 @@ if __name__ == '__main__':
     APC_model = APC_encoder(config['model_params']['APC']['mel_dim'],
                             config['model_params']['APC']['hidden_size'],
                             config['model_params']['APC']['num_layers'],
-                            config['model_params']['APC']['residual'])
-    APC_model.load_state_dict(torch.load(config['model_params']['APC']['ckp_path']), strict=False)
+                            config['model_params']['APC']['residual'])  
     if opt.device == 'cuda':
-        APC_model.cuda() 
+        APC_model.load_state_dict(torch.load(config['model_params']['APC']['ckp_path']),  strict=False)
+        APC_model.cuda()
+    else:
+        APC_model.load_state_dict(torch.load(config['model_params']['APC']['ckp_path'], map_location=torch.device('cpu')),  strict=False)
+  
     APC_model.eval()
     print('---------- Loading Model: {} -------------'.format(Featopt.task))
     Audio2Feature = create_model(Featopt)   
@@ -280,9 +283,11 @@ if __name__ == '__main__':
     
     
     final_path = join(save_root, audio_name + '.avi')
+    print(final_path)
     write_video_with_audio(tmp_audio_path, final_path, 'pred_')
     feature_maps_path = join(save_root, audio_name + '_feature_maps.avi')
     write_video_with_audio(tmp_audio_path, feature_maps_path, 'input_')
+    print(feature_maps_path)
     
     if os.path.exists(tmp_audio_path):
         os.remove(tmp_audio_path)
