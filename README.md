@@ -42,10 +42,18 @@ sudo apt-get install ffmpeg
 - Install the dependences:
 
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
+- For some issues in different library version:
 
+```
+pip3 uninstall numba
+pip3 install numba==0.48.0 --user
+
+pip3 uninstall resampy 
+pip3 install resampy==0.3.1 --user
+```
 
 ## Demo
 
